@@ -1,0 +1,109 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "slots": [],
+          "name": "GetSaunaStatusIntent",
+          "samples": [
+            "what\u0027s the sauna status",
+            "get sauna status",
+            "how is my sauna",
+            "check sauna",
+            "sauna status",
+            "tell me about my sauna",
+            "is the sauna on",
+            "what\u0027s the temperature"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "temperature",
+              "type": "AMAZON.NUMBER"
+            },
+            {
+              "name": "humidity",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "name": "StartSaunaIntent",
+          "samples": [
+            "start sauna to {temperature} degrees",
+            "heat sauna to {temperature}",
+            "set sauna to {temperature} degrees",
+            "turn on sauna to {temperature}",
+            "start sauna to {temperature} degrees with humidity {humidity}",
+            "heat sauna to {temperature} with humidity level {humidity}",
+            "start sauna",
+            "turn on the sauna",
+            "heat the sauna"
+          ]
+        },
+        {
+          "slots": [],
+          "name": "StopSaunaIntent",
+          "samples": [
+            "stop sauna",
+            "turn off sauna",
+            "stop heating",
+            "end sauna session",
+            "shut down sauna",
+            "power off sauna"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "state",
+              "type": "lightState"
+            }
+          ],
+          "name": "ControlLightIntent",
+          "samples": [
+            "turn {state} sauna light",
+            "switch {state} the light",
+            "turn the light {state}",
+            "set light {state}",
+            "toggle the light",
+            "change the light"
+          ]
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        }
+      ],
+      "types": [
+        {
+          "values": [
+            {
+              "name": {
+                "value": "on"
+              }
+            },
+            {
+              "name": {
+                "value": "off"
+              }
+            }
+          ],
+          "name": "lightState"
+        }
+      ],
+      "invocationName": "sauna control"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "sauna-control-skill",
+  "version": "1.0.0",
+  "description": "Alexa skill for controlling saunas (Huum and more)",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "ask-sdk-core": "^2.14.0",
+    "ask-sdk-model": "^1.39.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.56.0"
+  }
+}
