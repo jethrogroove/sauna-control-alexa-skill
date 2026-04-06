@@ -1,20 +1,31 @@
 const Alexa = require('ask-sdk-core');
+const axios = require('axios');
 const { getProvider } = require('./providers');
+
+// ---------------------------------------------------------------------------
+// Configuration
+// ---------------------------------------------------------------------------
+
+/**
+ * URL of the auth server's credentials endpoint.
+ * Set this to your Vercel deployment URL.
+ */
+const AUTH_SERVER_URL =
+  process.env.AUTH_SERVER_URL || 'https://sauna-control-auth.vercel.app';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Extract the user's sauna credentials from the Alexa access token.
+ * Fetch the user's sauna credentials from the auth server using the
+ * OAuth access token that Alexa provides after account linking.
  *
- * For now we use a simple JSON-encoded access token containing:
- *   { provider, email, password }
- *
- * Once OAuth account linking is wired up, the access token will be exchanged
- * for stored credentials on our auth server.
+ * The access token is a JWT issued by our auth server. We send it to
+ * the /api/credentials endpoint, which validates it and returns the
+ * user's decrypted sauna credentials: { provider, email, password }.
  */
-function getCredentials(handlerInput) {
+async function getCredentials(handlerInput) {
   const accessToken =
     handlerInput.requestEnvelope.context.System.user.accessToken;
 
@@ -23,8 +34,13 @@ function getCredentials(handlerInput) {
   }
 
   try {
-    return JSON.parse(Buffer.from(accessToken, 'base64').toString('utf-8'));
-  } catch {
+    const response = await axios.get(`${AUTH_SERVER_URL}/api/credentials`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      timeout: 5000,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch credentials:', error.message);
     return null;
   }
 }
@@ -84,8 +100,8 @@ const LaunchRequestHandler = {
       handlerInput.requestEnvelope.request.type === 'LaunchRequest'
     );
   },
-  handle(handlerInput) {
-    const creds = getCredentials(handlerInput);
+  async handle(handlerInput) {
+    const creds = await getCredentials(handlerInput);
     if (!creds) {
       return accountLinkResponse(handlerInput);
     }
@@ -110,7 +126,7 @@ const GetSaunaStatusIntentHandler = {
     );
   },
   async handle(handlerInput) {
-    const creds = getCredentials(handlerInput);
+    const creds = await getCredentials(handlerInput);
     if (!creds) return accountLinkResponse(handlerInput);
 
     try {
@@ -154,7 +170,7 @@ const StartSaunaIntentHandler = {
     );
   },
   async handle(handlerInput) {
-    const creds = getCredentials(handlerInput);
+    const creds = await getCredentials(handlerInput);
     if (!creds) return accountLinkResponse(handlerInput);
 
     try {
@@ -219,7 +235,7 @@ const StopSaunaIntentHandler = {
     );
   },
   async handle(handlerInput) {
-    const creds = getCredentials(handlerInput);
+    const creds = await getCredentials(handlerInput);
     if (!creds) return accountLinkResponse(handlerInput);
 
     try {
@@ -248,8 +264,8 @@ const ControlLightIntentHandler = {
         'ControlLightIntent'
     );
   },
-  handle(handlerInput) {
-    const creds = getCredentials(handlerInput);
+  async handle(handlerInput) {
+    const creds = await getCredentials(handlerInput);
     if (!creds) return accountLinkResponse(handlerInput);
 
     const slots = handlerInput.requestEnvelope.request.intent.slots || {};

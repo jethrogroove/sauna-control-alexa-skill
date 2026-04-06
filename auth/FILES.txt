@@ -1,0 +1,394 @@
+================================================================================
+ALEXA SAUNA CONTROL - OAUTH AUTH SERVER
+Complete File Listing
+================================================================================
+
+Directory: /sessions/nice-focused-hamilton/mnt/Alexa Sauna Control/auth/
+
+================================================================================
+CONFIGURATION FILES (5)
+================================================================================
+
+1. package.json (30 lines)
+   - NPM dependencies: next, react, @supabase/supabase-js, jose
+   - Scripts: dev, build, start, lint
+   - Node version: >=18.0.0
+
+2. next.config.js (10 lines)
+   - React Strict Mode enabled
+   - Pages router configuration
+   - Vercel-compatible settings
+
+3. vercel.json (20 lines)
+   - Vercel build configuration
+   - Environment variable mappings
+   - Function settings
+
+4. .env.example (12 lines)
+   - Template for all 7 environment variables
+   - No secrets (for git)
+   - Clear descriptions
+
+5. .gitignore (35 lines)
+   - Standard Node.js ignore patterns
+   - Environment file exclusions
+   - IDE and OS file exclusions
+
+================================================================================
+APPLICATION CORE (11 files)
+================================================================================
+
+PAGES & UI:
+
+6. pages/authorize.js (600+ lines)
+   - React component for OAuth authorization
+   - Login/signup form
+   - Sauna credentials form
+   - Responsive CSS styling (no frameworks)
+   - Two-step flow with state management
+   - Handles OAuth query parameters
+   - Error and success message handling
+
+API ENDPOINTS:
+
+7. pages/api/auth/signin.js (40 lines)
+   - POST /api/auth/signin
+   - User login with email/password
+   - Supabase Auth integration
+   - Returns userId on success
+
+8. pages/api/auth/signup.js (50 lines)
+   - POST /api/auth/signup
+   - User registration
+   - Password validation (min 8 chars)
+   - Duplicate email detection
+
+9. pages/api/oauth/authorize.js (100 lines)
+   - POST /api/oauth/authorize
+   - Stores encrypted sauna credentials
+   - Generates single-use auth code
+   - Validates provider and parameters
+   - Handles both new and existing credentials
+
+10. pages/api/oauth/token.js (80 lines)
+    - POST /api/oauth/token
+    - OAuth 2.0 token endpoint (RFC 6749)
+    - Two grant types: authorization_code, refresh_token
+    - Client credential validation
+    - Returns JWT access token + opaque refresh token
+
+11. pages/api/credentials.js (70 lines)
+    - GET /api/credentials
+    - Protected endpoint (Bearer token required)
+    - Decrypts and returns sauna credentials
+    - Lambda-facing endpoint
+    - Error handling for invalid/expired tokens
+
+================================================================================
+LIBRARY FILES (3 files)
+================================================================================
+
+12. lib/supabase.js (200 lines)
+    - Supabase client initialization
+    - Public client for signup/signin
+    - Service role client for server operations
+    - Helper functions:
+      - signUpUser(email, password)
+      - signInUser(email, password)
+      - getUserById(userId)
+      - verifyToken(token)
+
+13. lib/crypto.js (150 lines)
+    - AES-256-GCM encryption/decryption
+    - Derives key from ENCRYPTION_KEY env var
+    - Functions:
+      - encryptCredential(plaintext) -> {encrypted, iv, authTag}
+      - decryptCredential(encrypted, iv, authTag) -> plaintext
+      - encryptSaunaCredentials(credentials) -> encrypted object
+      - decryptSaunaCredentials(record) -> plaintext object
+    - 128-bit random IV per encryption
+    - Auth tag prevents tampering
+
+14. lib/tokens.js (220 lines)
+    - OAuth 2.0 token management
+    - Authorization codes (5 min expiry, single-use)
+    - Access tokens (JWT, 1 hour expiry)
+    - Refresh tokens (opaque, 30 day expiry)
+    - Functions:
+      - createAuthorizationCode(userId, clientId, redirectUri)
+      - verifyAuthorizationCode(code, clientId, redirectUri)
+      - createAccessToken(userId, expiresInSeconds)
+      - verifyAccessToken(token)
+      - createRefreshToken(userId, clientId, expiresInSeconds)
+      - verifyRefreshToken(token, clientId)
+      - revokeRefreshToken(token)
+
+================================================================================
+DATABASE (1 file)
+================================================================================
+
+15. supabase-schema.sql (100+ lines)
+    - PostgreSQL schema for Supabase
+    
+    Tables created:
+    
+    1. sauna_credentials
+       - Encrypted email and password for sauna providers
+       - IV and auth tag for each credential
+       - User and provider foreign keys
+       - Timestamps for audit trail
+       - Unique constraint on (user_id, provider)
+    
+    2. oauth_codes
+       - Single-use authorization codes
+       - Links to user, client, redirect URI
+       - Expiry timestamp (5 minutes)
+       - Used flag to prevent reuse
+    
+    3. oauth_refresh_tokens
+       - Long-lived refresh tokens
+       - Links to user and client
+       - Expiry timestamp (30 days)
+       - Revoked flag for explicit revocation
+    
+    Row-Level Security (RLS):
+    - sauna_credentials: User can access own records
+    - oauth_codes: Service role only
+    - oauth_refresh_tokens: Service role only
+    
+    Indexes created:
+    - Primary keys on all tables
+    - Foreign key indexes for joins
+    - Unique indexes on codes/tokens
+    - Expiry indexes for cleanup queries
+
+================================================================================
+DOCUMENTATION (8 files)
+================================================================================
+
+16. README.md (500+ lines)
+    - Complete technical documentation
+    - Architecture overview
+    - Setup instructions (step-by-step)
+    - API endpoint reference
+    - Environment variable guide
+    - Security considerations
+    - Troubleshooting guide
+    - Lambda integration overview
+    - Production checklist
+
+17. QUICKSTART.md (200+ lines)
+    - 15-minute setup guide
+    - For first-time users
+    - Step-by-step instructions:
+      1. Create Supabase project
+      2. Generate secrets
+      3. Setup environment
+      4. Run locally
+      5. Deploy to Vercel
+      6. Configure Alexa
+    - Quick links and references
+
+18. TESTING.md (400+ lines)
+    - Comprehensive testing guide
+    - 14 test cases with instructions
+    - Error handling tests
+    - Database verification
+    - Security tests
+    - Performance tests
+    - Browser testing
+    - Debugging tips
+    - Test results template
+
+19. LAMBDA_EXAMPLE.md (300+ lines)
+    - Alexa Lambda integration examples
+    - Step-by-step guide for Lambda
+    - Code examples for:
+      - Getting credentials with access token
+      - Calling sauna provider APIs
+      - Token refresh handling
+      - Error handling
+      - DynamoDB storage patterns
+    - Complete Lambda handler example
+    - Production considerations
+
+20. FILE_INDEX.md (600+ lines)
+    - Complete architecture reference
+    - File-by-file breakdown
+    - API endpoint specifications
+    - Database schema details
+    - Data flow diagrams
+    - Environment variable reference
+    - Dependency graph
+    - Performance considerations
+    - Security layers analysis
+
+21. DEPLOYMENT.md (500+ lines)
+    - Production deployment guide
+    - Pre-deployment checklist
+    - Step-by-step Vercel deployment
+    - Supabase configuration
+    - Environment variable setup
+    - Secret generation
+    - Testing in production
+    - Monitoring and scaling
+    - Disaster recovery
+    - Troubleshooting guide
+
+22. SETUP_SUMMARY.txt (100+ lines)
+    - Quick reference guide
+    - File structure overview
+    - Features checklist
+    - Quick setup overview
+    - API endpoint reference
+    - Database schema summary
+    - Security features list
+    - Next steps
+
+23. COMPLETION_REPORT.md (250+ lines)
+    - Project completion report
+    - Deliverables checklist
+    - Architecture overview
+    - Key features implemented
+    - Code statistics
+    - File statistics
+    - Testing coverage
+    - Production readiness assessment
+    - Quick start path
+    - Next steps
+
+================================================================================
+ADMINISTRATIVE (1 file)
+================================================================================
+
+24. FILES.txt (this file)
+    - Complete file listing
+    - File count and statistics
+    - Summary of contents
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+TOTAL FILES: 24
+
+Code Files:
+  - JavaScript/JSX: 11 files (pages + api)
+  - Library Files: 3 files
+  - Configuration: 5 files
+  - Database Schema: 1 file
+  Total Code: 20 files, ~1,720 lines
+
+Documentation Files:
+  - Main docs: 8 files
+  - This listing: 1 file
+  Total Docs: 9 files, ~2,600+ lines
+
+GRAND TOTAL: ~4,320+ lines
+
+================================================================================
+DIRECTORY STRUCTURE
+================================================================================
+
+auth/
+├── Configuration Files
+│   ├── package.json
+│   ├── next.config.js
+│   ├── vercel.json
+│   ├── .env.example
+│   └── .gitignore
+│
+├── pages/
+│   ├── authorize.js
+│   └── api/
+│       ├── auth/
+│       │   ├── signin.js
+│       │   └── signup.js
+│       ├── oauth/
+│       │   ├── authorize.js
+│       │   └── token.js
+│       └── credentials.js
+│
+├── lib/
+│   ├── supabase.js
+│   ├── crypto.js
+│   └── tokens.js
+│
+├── Database
+│   └── supabase-schema.sql
+│
+└── Documentation
+    ├── README.md
+    ├── QUICKSTART.md
+    ├── TESTING.md
+    ├── LAMBDA_EXAMPLE.md
+    ├── FILE_INDEX.md
+    ├── DEPLOYMENT.md
+    ├── SETUP_SUMMARY.txt
+    ├── COMPLETION_REPORT.md
+    └── FILES.txt
+
+================================================================================
+FILE PURPOSES AT A GLANCE
+================================================================================
+
+🔧 Setup & Config
+  - package.json: Dependencies and scripts
+  - next.config.js: Next.js settings
+  - vercel.json: Deployment config
+  - .env.example: Environment template
+  - .gitignore: Git ignore rules
+
+📄 Frontend
+  - pages/authorize.js: Login/signup UI
+
+🔌 API Endpoints
+  - pages/api/auth/signin.js: User login
+  - pages/api/auth/signup.js: User registration
+  - pages/api/oauth/authorize.js: Credential storage + auth code
+  - pages/api/oauth/token.js: OAuth token exchange
+  - pages/api/credentials.js: Retrieve encrypted credentials
+
+📚 Libraries
+  - lib/supabase.js: Database client
+  - lib/crypto.js: Encryption/decryption
+  - lib/tokens.js: Token management
+
+💾 Database
+  - supabase-schema.sql: Tables, RLS, indexes
+
+📖 Documentation
+  - README.md: Complete reference
+  - QUICKSTART.md: First-time setup
+  - TESTING.md: Test cases
+  - LAMBDA_EXAMPLE.md: Lambda examples
+  - FILE_INDEX.md: Architecture
+  - DEPLOYMENT.md: Production guide
+  - SETUP_SUMMARY.txt: Quick ref
+  - COMPLETION_REPORT.md: Project status
+
+================================================================================
+GETTING STARTED
+================================================================================
+
+1. Read QUICKSTART.md (15 minutes)
+2. Read README.md for deep dive
+3. Set up local environment (following QUICKSTART)
+4. Run TESTING.md test cases
+5. Deploy with DEPLOYMENT.md guide
+6. Integrate with Lambda using LAMBDA_EXAMPLE.md
+
+================================================================================
+KEY TECHNOLOGIES
+================================================================================
+
+Frontend:     React 18 (Next.js)
+Backend:      Next.js 14 (Vercel serverless)
+Database:     PostgreSQL (Supabase)
+Auth:         Supabase Auth + JWT
+Encryption:   AES-256-GCM
+Deployment:   Vercel
+
+================================================================================
+END OF FILE LISTING
+================================================================================
