@@ -1,23 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 
 const styles = `
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-
   .container {
     background: white;
     border-radius: 12px;
@@ -194,6 +178,9 @@ export default function AuthorizePage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // Store userId in a ref (avoids SSR/sessionStorage issues)
+  const userIdRef = useRef(null);
+
   // Sauna credentials form
   const [saunaProvider, setSaunaProvider] = useState('Huum');
   const [saunaEmail, setSaunaEmail] = useState('');
@@ -225,7 +212,7 @@ export default function AuthorizePage() {
       }
 
       // Store user ID temporarily for credentials submission
-      sessionStorage.setItem('userId', data.userId);
+      userIdRef.current = data.userId;
       setSuccess(
         isLogin ? 'Logged in successfully!' : 'Account created successfully!'
       );
@@ -253,7 +240,7 @@ export default function AuthorizePage() {
     setLoading(true);
 
     try {
-      const userId = sessionStorage.getItem('userId');
+      const userId = userIdRef.current;
 
       if (!userId) {
         setError('Session lost. Please authenticate again.');
@@ -292,7 +279,7 @@ export default function AuthorizePage() {
       }
 
       // Clear session
-      sessionStorage.removeItem('userId');
+      userIdRef.current = null;
 
       // Redirect back to Alexa with authorization code
       const redirectUrl = new URL(redirect_uri);
