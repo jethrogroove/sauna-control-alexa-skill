@@ -215,11 +215,14 @@ export default function ResetPasswordPage() {
         {success && <div className="success">{success}</div>}
 
         {accessToken && !success && (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} autoComplete="on">
             <div className="form-group">
-              <label>New Password</label>
+              <label htmlFor="new-password">New Password</label>
               <input
+                id="new-password"
+                name="new-password"
                 type="password"
+                autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
@@ -230,9 +233,12 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="form-group">
-              <label>Confirm Password</label>
+              <label htmlFor="confirm-password">Confirm Password</label>
               <input
+                id="confirm-password"
+                name="confirm-password"
                 type="password"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required

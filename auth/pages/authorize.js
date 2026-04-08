@@ -161,6 +161,28 @@ const styles = `
   .hidden {
     display: none;
   }
+
+  .trust-box {
+    background: #f0f4ff;
+    border: 1px solid #d0d9f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: #444;
+    line-height: 1.5;
+  }
+
+  .trust-box strong {
+    display: block;
+    color: #333;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+
+  .trust-box p {
+    margin: 0;
+  }
 `;
 
 export default function AuthorizePage() {
@@ -351,11 +373,14 @@ export default function AuthorizePage() {
             {error && <div className="error">{error}</div>}
             {success && <div className="success">{success}</div>}
 
-            <form onSubmit={handleAuth}>
+            <form onSubmit={handleAuth} autoComplete="on">
               <div className="form-group">
-                <label>Email</label>
+                <label htmlFor="email">Email</label>
                 <input
+                  id="email"
+                  name="email"
                   type="email"
+                  autoComplete={isLogin ? 'username' : 'email'}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -365,9 +390,12 @@ export default function AuthorizePage() {
               </div>
 
               <div className="form-group">
-                <label>Password</label>
+                <label htmlFor="password">Password</label>
                 <input
+                  id="password"
+                  name="password"
                   type="password"
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -428,11 +456,14 @@ export default function AuthorizePage() {
             {success && <div className="success">{success}</div>}
 
             {!success && (
-              <form onSubmit={handleForgotPassword}>
+              <form onSubmit={handleForgotPassword} autoComplete="on">
                 <div className="form-group">
-                  <label>Email</label>
+                  <label htmlFor="forgot-email">Email</label>
                   <input
+                    id="forgot-email"
+                    name="email"
                     type="email"
+                    autoComplete="username"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     required
@@ -466,16 +497,30 @@ export default function AuthorizePage() {
         {step === 'credentials' && (
           <>
             <div className="header">
-              <h1>Sauna Credentials</h1>
-              <p>Enter your sauna provider credentials</p>
+              <h1>Link Your Sauna</h1>
+              <p>
+                Enter the login you use with your sauna manufacturer's app
+              </p>
+            </div>
+
+            <div className="trust-box">
+              <strong>Why do we need this?</strong>
+              <p>
+                Sauna Control uses your manufacturer login to send commands to
+                your sauna on your behalf — the same way the manufacturer's own
+                app does. Your credentials are encrypted with AES-256 and stored
+                securely. We never share them with third parties.
+              </p>
             </div>
 
             {error && <div className="error">{error}</div>}
 
-            <form onSubmit={handleCredentialsSubmit} className="sauna-form">
+            <form onSubmit={handleCredentialsSubmit} className="sauna-form" autoComplete="on">
               <div className="form-group">
-                <label>Sauna Provider</label>
+                <label htmlFor="sauna-provider">Sauna Provider</label>
                 <select
+                  id="sauna-provider"
+                  name="provider"
                   value={saunaProvider}
                   onChange={(e) => setSaunaProvider(e.target.value)}
                   disabled={loading}
@@ -485,9 +530,12 @@ export default function AuthorizePage() {
               </div>
 
               <div className="form-group">
-                <label>{saunaProvider} Email</label>
+                <label htmlFor="sauna-email">{saunaProvider} Email</label>
                 <input
+                  id="sauna-email"
+                  name="sauna-email"
                   type="email"
+                  autoComplete="email"
                   value={saunaEmail}
                   onChange={(e) => setSaunaEmail(e.target.value)}
                   required
@@ -497,9 +545,12 @@ export default function AuthorizePage() {
               </div>
 
               <div className="form-group">
-                <label>{saunaProvider} Password</label>
+                <label htmlFor="sauna-password">{saunaProvider} Password</label>
                 <input
+                  id="sauna-password"
+                  name="sauna-password"
                   type="password"
+                  autoComplete="off"
                   value={saunaPassword}
                   onChange={(e) => setSaunaPassword(e.target.value)}
                   required
