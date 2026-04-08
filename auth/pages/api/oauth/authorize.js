@@ -1,5 +1,5 @@
 import { createAuthorizationCode } from '../../../lib/tokens';
-import { supabaseAdmin } from '../../../lib/supabase';
+import { getSupabaseAdmin } from '../../../lib/supabase';
 import { encryptSaunaCredentials } from '../../../lib/crypto';
 
 /**
@@ -48,6 +48,8 @@ export default async function handler(req, res) {
       console.error('Encryption error:', error);
       return res.status(500).json({ error: 'Failed to encrypt credentials' });
     }
+
+    const supabaseAdmin = getSupabaseAdmin();
 
     // Check if user already has credentials for this provider
     const { data: existingCreds } = await supabaseAdmin

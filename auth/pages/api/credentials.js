@@ -1,5 +1,5 @@
 import { verifyAccessToken } from '../../lib/tokens';
-import { supabaseAdmin } from '../../lib/supabase';
+import { getSupabaseAdmin } from '../../lib/supabase';
 import { decryptSaunaCredentials } from '../../lib/crypto';
 
 /**
@@ -31,6 +31,8 @@ export default async function handler(req, res) {
     }
 
     const userId = verified.userId;
+
+    const supabaseAdmin = getSupabaseAdmin();
 
     // Get provider from query parameter (optional, defaults to first found)
     const { provider } = req.query;

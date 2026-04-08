@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { randomBytes } from 'crypto';
-import { supabaseAdmin } from './supabase.js';
+import { getSupabaseAdmin } from './supabase.js';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || '');
 
@@ -28,6 +28,7 @@ function generateRefreshToken() {
  * @returns {Promise<string>} Authorization code
  */
 export async function createAuthorizationCode(userId, clientId, redirectUri) {
+  const supabaseAdmin = getSupabaseAdmin();
   const code = generateAuthCode();
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
@@ -57,6 +58,7 @@ export async function createAuthorizationCode(userId, clientId, redirectUri) {
  * @returns {Promise<string>} User ID if valid, null otherwise
  */
 export async function verifyAuthorizationCode(code, clientId, redirectUri) {
+  const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from('oauth_codes')
     .select('*')
@@ -75,7 +77,7 @@ export async function verifyAuthorizationCode(code, clientId, redirectUri) {
     return null;
   }
 
-  // Mark code as used
+  // Mark code as used (supabaseAdmin already initialized above)
   await supabaseAdmin
     .from('oauth_codes')
     .update({ used: true })
@@ -130,6 +132,7 @@ export async function createRefreshToken(
   clientId,
   expiresInSeconds = 2592000
 ) {
+  const supabaseAdmin = getSupabaseAdmin();
   const token = generateRefreshToken();
   const expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
 
@@ -157,6 +160,7 @@ export async function createRefreshToken(
  * @returns {Promise<{userId: string, accessToken: string} | null>}
  */
 export async function verifyRefreshToken(refreshToken, clientId) {
+  const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from('oauth_refresh_tokens')
     .select('*')
@@ -189,6 +193,7 @@ export async function verifyRefreshToken(refreshToken, clientId) {
  * @returns {Promise<boolean>} Success status
  */
 export async function revokeRefreshToken(refreshToken) {
+  const supabaseAdmin = getSupabaseAdmin();
   const { error } = await supabaseAdmin
     .from('oauth_refresh_tokens')
     .update({ revoked: true })
