@@ -140,7 +140,7 @@
           "name": "lightState"
         }
       ],
-      "invocationName": "my sauna"
+      "invocationName": "sauna control"
     }
   }
 }
