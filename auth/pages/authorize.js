@@ -162,6 +162,27 @@ const styles = `
     display: none;
   }
 
+  .footer-links {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .footer-links a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+  }
+
+  .footer-links a:hover {
+    color: white;
+    text-decoration: underline;
+  }
+
+  .footer-sep {
+    color: rgba(255, 255, 255, 0.4);
+    margin: 0 8px;
+  }
+
   .trust-box {
     background: #f0f4ff;
     border: 1px solid #d0d9f0;
@@ -511,6 +532,13 @@ export default function AuthorizePage() {
                 app does. Your credentials are encrypted with AES-256 and stored
                 securely. We never share them with third parties.
               </p>
+              <p style={{ marginTop: '8px', fontSize: '12px' }}>
+                Read our{' '}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer">
+                  Privacy Policy
+                </a>{' '}
+                for full details.
+              </p>
             </div>
 
             {error && <div className="error">{error}</div>}
@@ -580,6 +608,15 @@ export default function AuthorizePage() {
             </div>
           </>
         )}
+      </div>
+      <div className="footer-links">
+        <a href="/privacy" target="_blank" rel="noopener noreferrer">
+          Privacy Policy
+        </a>
+        <span className="footer-sep">|</span>
+        <a href="/terms" target="_blank" rel="noopener noreferrer">
+          Terms of Service
+        </a>
       </div>
     </>
   );
