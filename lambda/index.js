@@ -107,14 +107,39 @@ const LaunchRequestHandler = {
       return accountLinkResponse(handlerInput);
     }
 
-    const speech =
-      'Sauna Control here. You can check status, start heating, or turn off your sauna. ' +
-      'What would you like to do?';
+    // On launch, just give them the current status
+    try {
+      const provider = getProvider(creds.provider || 'huum');
+      const status = await provider.getStatus(creds);
+      const temp = toUserTemp(status.currentTemperature, handlerInput);
 
-    return handlerInput.responseBuilder
-      .speak(speech)
-      .reprompt('What would you like to do with your sauna?')
-      .getResponse();
+      let speech;
+      if (status.isOn) {
+        const target = toUserTemp(status.targetTemperature, handlerInput);
+        speech =
+          `Sauna is heating. Currently ${temp.value} ${temp.unit}, ` +
+          `target ${target.value}.`;
+      } else if (status.statusText === 'offline') {
+        speech = 'Sauna is offline.';
+      } else {
+        speech = `Sauna is ${status.statusText} at ${temp.value} ${temp.unit}.`;
+      }
+
+      if (status.hasLight) {
+        speech += status.lightOn ? ' Light is on.' : ' Light is off.';
+      }
+
+      return handlerInput.responseBuilder
+        .speak(speech)
+        .reprompt('What would you like to do?')
+        .getResponse();
+    } catch (error) {
+      console.error('Launch status error:', error);
+      return handlerInput.responseBuilder
+        .speak('Sauna Control is ready. What would you like to do?')
+        .reprompt('What would you like to do?')
+        .getResponse();
+    }
   },
 };
 
