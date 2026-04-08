@@ -15,7 +15,22 @@ export default async function handler(req, res) {
     SUPABASE_URL_VALUE: process.env.SUPABASE_URL || 'NOT SET',
   };
 
-  // Try connecting to Supabase
+  // Try connecting to Supabase via raw fetch first
+  let rawFetchStatus = 'not tested';
+  try {
+    const url = `${process.env.SUPABASE_URL}/rest/v1/`;
+    const resp = await fetch(url, {
+      headers: {
+        apikey: process.env.SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+      },
+    });
+    rawFetchStatus = `status: ${resp.status}`;
+  } catch (err) {
+    rawFetchStatus = `exception: ${err.message} | cause: ${JSON.stringify(err.cause)}`;
+  }
+
+  // Try connecting via Supabase client
   let supabaseStatus = 'not tested';
   try {
     const { getSupabaseAdmin } = await import('../../lib/supabase');
@@ -27,11 +42,12 @@ export default async function handler(req, res) {
       supabaseStatus = `connected (${data.users.length} users found)`;
     }
   } catch (err) {
-    supabaseStatus = `exception: ${err.message}`;
+    supabaseStatus = `exception: ${err.message} | cause: ${JSON.stringify(err.cause)}`;
   }
 
   return res.status(200).json({
     envVars: checks,
+    rawFetch: rawFetchStatus,
     supabase: supabaseStatus,
     nodeVersion: process.version,
   });
