@@ -118,19 +118,31 @@ export default function ResetPasswordPage() {
   const [tokenError, setTokenError] = useState(false);
 
   useEffect(() => {
-    // Supabase sends the token as a hash fragment: #access_token=...&type=recovery
+    // Supabase may send the token as a hash fragment or as query parameters
+    // Check hash first: #access_token=...&type=recovery
+    let token = null;
+    let type = null;
+
     const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
-    const token = params.get('access_token');
-    const type = params.get('type');
+    if (hash) {
+      const hashParams = new URLSearchParams(hash);
+      token = hashParams.get('access_token');
+      type = hashParams.get('type');
+    }
+
+    // Also check query params: ?access_token=...&type=recovery
+    if (!token) {
+      const queryParams = new URLSearchParams(window.location.search);
+      token = queryParams.get('access_token');
+      type = queryParams.get('type');
+    }
 
     if (token && type === 'recovery') {
       setAccessToken(token);
-    } else if (hash) {
-      // There's a hash but no valid token
-      setTokenError(true);
+    } else if (token) {
+      // Token present but not a recovery type — try it anyway
+      setAccessToken(token);
     } else {
-      // No hash at all - user navigated here directly
       setTokenError(true);
     }
   }, []);

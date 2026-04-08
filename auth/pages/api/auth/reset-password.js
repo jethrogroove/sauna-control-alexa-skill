@@ -1,8 +1,11 @@
 import { getSupabaseAdmin } from '../../../lib/supabase';
+import { jwtVerify } from 'jose';
 
 /**
  * POST /api/auth/reset-password
- * Updates the user's password using the access token from the reset link
+ * Updates the user's password using the access token from the reset link.
+ * Verifies the token to extract the user ID, then uses the admin API
+ * to update the password directly.
  */
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,27 +27,28 @@ export default async function handler(req, res) {
         .json({ error: 'Password must be at least 8 characters' });
     }
 
-    // Use the access token from the reset link to create an authenticated client
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_ANON_KEY,
-      {
-        auth: { autoRefreshToken: false, persistSession: false },
-        global: {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        },
-      }
-    );
+    // First, verify the token is valid by getting the user from Supabase
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data: userData, error: getUserError } =
+      await supabaseAdmin.auth.getUser(accessToken);
 
-    const { data, error } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
-    if (error) {
-      console.error('Password update error:', error);
+    if (getUserError || !userData?.user) {
+      console.error('Token verification error:', getUserError);
       return res.status(400).json({
         error: 'Failed to update password. The reset link may have expired.',
+      });
+    }
+
+    // Use admin API to update the password — this bypasses session requirements
+    const { error: updateError } =
+      await supabaseAdmin.auth.admin.updateUserById(userData.user.id, {
+        password: newPassword,
+      });
+
+    if (updateError) {
+      console.error('Password update error:', updateError);
+      return res.status(400).json({
+        error: 'Failed to update password. Please try again.',
       });
     }
 
