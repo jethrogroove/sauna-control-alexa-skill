@@ -45,18 +45,21 @@
       "isAvailableWorldwide": true,
       "locales": {
         "en-US": {
-          "description": "Check the status of your sauna, turn it on to a desired temperature, or turn it off.",
+          "description": "Sauna Control lets you manage your sauna with your voice through Alexa. Check the current temperature and status, start heating to a specific temperature, turn it off, and control the light. Works with Huum saunas, with more manufacturers coming soon.",
           "examplePhrases": [
-            "Alexa, open sauna control",
-            "Check the status of my sauna",
-            "Turn on my sauna to 150 degrees"
+            "Alexa, ask my sauna for the status",
+            "Alexa, tell my sauna to heat to 180 degrees",
+            "Alexa, tell my sauna to turn off"
           ],
           "keywords": [
+            "sauna",
             "Huum",
-            "sauna"
+            "smart home",
+            "temperature",
+            "heat"
           ],
-          "name": "Huum Sauna Control",
-          "summary": "Control your Huum sauna from your Alexa devices"
+          "name": "Sauna Control",
+          "summary": "Control your sauna by voice — check status, set temperature, and turn it on or off"
         }
       },
       "testingInstructions": "{\"ask_dist_username\":\"\",\"ask_dist_password\":\"\",\"ask_dist_testing_instructions\":\"Sample Testing Instructions.\"}"

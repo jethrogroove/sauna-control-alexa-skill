@@ -18,14 +18,25 @@
           "slots": [],
           "name": "GetSaunaStatusIntent",
           "samples": [
-            "what\u0027s the sauna status",
+            "what's the sauna status",
             "get sauna status",
             "how is my sauna",
             "check sauna",
             "sauna status",
             "tell me about my sauna",
             "is the sauna on",
-            "what\u0027s the temperature"
+            "what's the temperature",
+            "is my sauna ready",
+            "how hot is the sauna",
+            "how hot is it",
+            "what temperature is the sauna",
+            "what temperature is it",
+            "is the sauna heating",
+            "check on my sauna",
+            "is it ready",
+            "for the status",
+            "for a status update",
+            "how's it going"
           ]
         },
         {
@@ -49,7 +60,25 @@
             "heat sauna to {temperature} with humidity level {humidity}",
             "start sauna",
             "turn on the sauna",
-            "heat the sauna"
+            "heat the sauna",
+            "warm up to {temperature} degrees",
+            "warm up to {temperature}",
+            "preheat to {temperature} degrees",
+            "preheat to {temperature}",
+            "fire it up",
+            "fire up the sauna",
+            "get it going",
+            "get the sauna going",
+            "set the temperature to {temperature}",
+            "set the temperature to {temperature} degrees",
+            "turn on to {temperature} degrees",
+            "turn on at {temperature}",
+            "start to {temperature}",
+            "heat to {temperature}",
+            "heat to {temperature} degrees",
+            "start it up",
+            "start heating",
+            "start heating to {temperature}"
           ]
         },
         {
@@ -58,10 +87,18 @@
           "samples": [
             "stop sauna",
             "turn off sauna",
+            "turn off the sauna",
             "stop heating",
             "end sauna session",
             "shut down sauna",
-            "power off sauna"
+            "shut off the sauna",
+            "power off sauna",
+            "cool down",
+            "cool it down",
+            "turn it off",
+            "shut it down",
+            "kill the sauna",
+            "stop it"
           ]
         },
         {
@@ -103,7 +140,7 @@
           "name": "lightState"
         }
       ],
-      "invocationName": "sauna control"
+      "invocationName": "my sauna"
     }
   }
 }
