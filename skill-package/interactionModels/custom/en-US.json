@@ -119,6 +119,20 @@
           ]
         },
         {
+          "slots": [],
+          "name": "GetLightStatusIntent",
+          "samples": [
+            "is the light on",
+            "is the light off",
+            "is the sauna light on",
+            "is the sauna light off",
+            "what's the light status",
+            "light status",
+            "is my light on",
+            "check the light"
+          ]
+        },
+        {
           "name": "AMAZON.NavigateHomeIntent",
           "samples": []
         }

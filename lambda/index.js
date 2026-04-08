@@ -116,17 +116,17 @@ const LaunchRequestHandler = {
       let speech;
       if (status.isOn) {
         const target = toUserTemp(status.targetTemperature, handlerInput);
-        speech =
-          `Sauna is heating. Currently ${temp.value} ${temp.unit}, ` +
-          `target ${target.value}.`;
+        speech = `Sawna is currently heating to a target of ${target.value} degrees.`;
       } else if (status.statusText === 'offline') {
-        speech = 'Sauna is offline.';
+        speech = 'Sawna is offline.';
       } else {
-        speech = `Sauna is ${status.statusText} at ${temp.value} ${temp.unit}.`;
+        speech = 'Sawna is off.';
       }
 
+      speech += ` Current temperature is ${temp.value} degrees.`;
+
       if (status.hasLight) {
-        speech += status.lightOn ? ' Light is on.' : ' Light is off.';
+        speech += status.lightOn ? ' The light is on.' : ' The light is off.';
       }
 
       return handlerInput.responseBuilder
@@ -136,7 +136,7 @@ const LaunchRequestHandler = {
     } catch (error) {
       console.error('Launch status error:', error);
       return handlerInput.responseBuilder
-        .speak('Sauna Control is ready. What would you like to do?')
+        .speak('Ready. What would you like to do?')
         .reprompt('What would you like to do?')
         .getResponse();
     }
@@ -163,32 +163,23 @@ const GetSaunaStatusIntentHandler = {
       let speech;
       if (status.isOn) {
         const target = toUserTemp(status.targetTemperature, handlerInput);
-        speech =
-          `Your sauna is currently heating. ` +
-          `The temperature is ${temp.value} ${temp.unit}, ` +
-          `heading to a target of ${target.value} ${target.unit}.`;
+        speech = `Heating to ${target.value}. Currently ${temp.value} ${temp.unit}.`;
       } else if (status.statusText === 'offline') {
-        speech = 'Your sauna is currently offline.';
+        speech = 'Sawna is offline.';
       } else {
-        speech =
-          `Your sauna is ${status.statusText}. ` +
-          `The current temperature is ${temp.value} ${temp.unit}.`;
+        speech = `${temp.value} ${temp.unit}, not heating.`;
       }
 
       // Append light status if the controller supports it
       if (status.hasLight) {
-        speech += status.lightOn
-          ? ' The light is on.'
-          : ' The light is off.';
+        speech += status.lightOn ? ' Light on.' : ' Light off.';
       }
 
       return handlerInput.responseBuilder.speak(speech).getResponse();
     } catch (error) {
       console.error('GetSaunaStatus error:', error);
       return handlerInput.responseBuilder
-        .speak(
-          'Sorry, I had trouble checking your sauna status. Please try again later.'
-        )
+        .speak('Sorry, I couldn\'t check the status. Try again later.')
         .getResponse();
     }
   },
@@ -243,17 +234,13 @@ const StartSaunaIntentHandler = {
         handlerInput
       );
 
-      const speech =
-        `OK, starting your sauna to ${target.value} ${target.unit}. ` +
-        `I'll heat it up for you.`;
+      const speech = `Starting sawna to ${target.value} ${target.unit}.`;
 
       return handlerInput.responseBuilder.speak(speech).getResponse();
     } catch (error) {
       console.error('StartSauna error:', error);
       return handlerInput.responseBuilder
-        .speak(
-          'Sorry, I had trouble starting your sauna. Please try again later.'
-        )
+        .speak('Sorry, I couldn\'t start the sawna. Try again later.')
         .getResponse();
     }
   },
@@ -276,14 +263,45 @@ const StopSaunaIntentHandler = {
       await provider.stop(creds);
 
       return handlerInput.responseBuilder
-        .speak('OK, your sauna has been turned off.')
+        .speak('Sawna is off.')
         .getResponse();
     } catch (error) {
       console.error('StopSauna error:', error);
       return handlerInput.responseBuilder
-        .speak(
-          'Sorry, I had trouble turning off your sauna. Please try again later.'
-        )
+        .speak('Sorry, I couldn\'t turn off the sawna. Try again later.')
+        .getResponse();
+    }
+  },
+};
+
+const GetLightStatusIntentHandler = {
+  canHandle(handlerInput) {
+    return (
+      handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+      handlerInput.requestEnvelope.request.intent.name ===
+        'GetLightStatusIntent'
+    );
+  },
+  async handle(handlerInput) {
+    const creds = await getCredentials(handlerInput);
+    if (!creds) return accountLinkResponse(handlerInput);
+
+    try {
+      const provider = getProvider(creds.provider || 'huum');
+      const status = await provider.getStatus(creds);
+
+      if (!status.hasLight) {
+        return handlerInput.responseBuilder
+          .speak('Your controller doesn\'t have a light system configured.')
+          .getResponse();
+      }
+
+      const speech = status.lightOn ? 'Light is on.' : 'Light is off.';
+      return handlerInput.responseBuilder.speak(speech).getResponse();
+    } catch (error) {
+      console.error('GetLightStatus error:', error);
+      return handlerInput.responseBuilder
+        .speak('Sorry, I couldn\'t check the light status. Try again later.')
         .getResponse();
     }
   },
@@ -306,11 +324,7 @@ const ControlLightIntentHandler = {
 
       if (!provider.light) {
         return handlerInput.responseBuilder
-          .speak(
-            `Sorry, light control is not available for ${
-              creds.provider || 'your sauna'
-            }.`
-          )
+          .speak('Light control isn\'t available for your sawna.')
           .getResponse();
       }
 
@@ -329,9 +343,7 @@ const ControlLightIntentHandler = {
 
       if (!result.hasLight) {
         return handlerInput.responseBuilder
-          .speak(
-            'Your sauna controller does not have a light system configured.'
-          )
+          .speak('Your controller doesn\'t have a light system configured.')
           .getResponse();
       }
 
@@ -343,9 +355,7 @@ const ControlLightIntentHandler = {
     } catch (error) {
       console.error('ControlLight error:', error);
       return handlerInput.responseBuilder
-        .speak(
-          'Sorry, I had trouble controlling the sauna light. Please try again later.'
-        )
+        .speak('Sorry, I couldn\'t control the light. Try again later.')
         .getResponse();
     }
   },
@@ -365,13 +375,11 @@ const HelpIntentHandler = {
   },
   handle(handlerInput) {
     const speech =
-      'You can say things like: check the sauna status, ' +
-      'start the sauna to 180 degrees, or turn off the sauna. ' +
-      'What would you like to do?';
+      'Try: check status, start to 180 degrees, turn off, or turn on the light.';
 
     return handlerInput.responseBuilder
       .speak(speech)
-      .reprompt('What would you like to do with your sauna?')
+      .reprompt('What would you like to do?')
       .getResponse();
   },
 };
@@ -443,6 +451,7 @@ exports.handler = Alexa.SkillBuilders.custom()
     GetSaunaStatusIntentHandler,
     StartSaunaIntentHandler,
     StopSaunaIntentHandler,
+    GetLightStatusIntentHandler,
     ControlLightIntentHandler,
     HelpIntentHandler,
     CancelAndStopIntentHandler,
