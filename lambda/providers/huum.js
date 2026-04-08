@@ -62,6 +62,10 @@ const HuumProvider = {
       targetTemperature: data.targetTemperature,
       humidity: data.humidity || null,
       doorOpen: data.door === true || data.door === 1,
+      lightOn: data.light === 1,
+      hasLight: data.config === 2 || data.config === 3,
+      hasSteamer: data.config === 1 || data.config === 3,
+      steamerError: data.steamerError === 1,
       startDate: data.startDate ? new Date(data.startDate).toISOString() : null,
       endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
       duration: data.duration || null,
@@ -118,6 +122,33 @@ const HuumProvider = {
       statusText: STATUS_DESCRIPTIONS[data.statusCode] || 'unknown',
       isOn: false,
       currentTemperature: data.temperature,
+      raw: data,
+    };
+  },
+
+  /**
+   * Control the sauna light.
+   * @param {object} credentials - { email, password }
+   * @param {string|null} state - 'on', 'off', or null to toggle
+   * @returns {object} Normalized status with light state
+   */
+  async light(credentials, state = null) {
+    const client = createClient(credentials.email, credentials.password);
+
+    let url = '/light';
+    if (state === 'on') {
+      url = '/light?light=1';
+    } else if (state === 'off') {
+      url = '/light?light=0';
+    }
+
+    const { data } = await client.get(url);
+
+    return {
+      provider: 'huum',
+      lightOn: data.light === 1,
+      config: data.config,
+      hasLight: data.config === 2 || data.config === 3,
       raw: data,
     };
   },

@@ -101,14 +101,15 @@ const LaunchRequestHandler = {
     );
   },
   async handle(handlerInput) {
+    console.log('[SaunaControl v2] LaunchRequest received');
     const creds = await getCredentials(handlerInput);
     if (!creds) {
       return accountLinkResponse(handlerInput);
     }
 
     const speech =
-      'Welcome to Sauna Control. You can ask me to check the sauna status, ' +
-      'start the sauna to a temperature, or turn it off. What would you like to do?';
+      'Sauna Control here. You can check status, start heating, or turn off your sauna. ' +
+      'What would you like to do?';
 
     return handlerInput.responseBuilder
       .speak(speech)
@@ -147,6 +148,13 @@ const GetSaunaStatusIntentHandler = {
         speech =
           `Your sauna is ${status.statusText}. ` +
           `The current temperature is ${temp.value} ${temp.unit}.`;
+      }
+
+      // Append light status if the controller supports it
+      if (status.hasLight) {
+        speech += status.lightOn
+          ? ' The light is on.'
+          : ' The light is off.';
       }
 
       return handlerInput.responseBuilder.speak(speech).getResponse();
@@ -268,20 +276,53 @@ const ControlLightIntentHandler = {
     const creds = await getCredentials(handlerInput);
     if (!creds) return accountLinkResponse(handlerInput);
 
-    const slots = handlerInput.requestEnvelope.request.intent.slots || {};
-    const state = slots.state?.value || 'toggle';
+    try {
+      const provider = getProvider(creds.provider || 'huum');
 
-    // Light control is not available via the Huum REST API at this time.
-    // This handler is a placeholder for future implementation or for
-    // providers that support light control.
-    return handlerInput.responseBuilder
-      .speak(
-        `Sorry, light control is not yet available through this skill. ` +
-        `You can control the light using the ${
-          creds.provider || 'Huum'
-        } app for now.`
-      )
-      .getResponse();
+      if (!provider.light) {
+        return handlerInput.responseBuilder
+          .speak(
+            `Sorry, light control is not available for ${
+              creds.provider || 'your sauna'
+            }.`
+          )
+          .getResponse();
+      }
+
+      const slots = handlerInput.requestEnvelope.request.intent.slots || {};
+      const stateSlot = slots.state?.value;
+
+      // Map slot values to on/off/toggle
+      let lightState = null; // null = toggle
+      if (stateSlot === 'on') {
+        lightState = 'on';
+      } else if (stateSlot === 'off') {
+        lightState = 'off';
+      }
+
+      const result = await provider.light(creds, lightState);
+
+      if (!result.hasLight) {
+        return handlerInput.responseBuilder
+          .speak(
+            'Your sauna controller does not have a light system configured.'
+          )
+          .getResponse();
+      }
+
+      const speech = result.lightOn
+        ? 'The sauna light is now on.'
+        : 'The sauna light is now off.';
+
+      return handlerInput.responseBuilder.speak(speech).getResponse();
+    } catch (error) {
+      console.error('ControlLight error:', error);
+      return handlerInput.responseBuilder
+        .speak(
+          'Sorry, I had trouble controlling the sauna light. Please try again later.'
+        )
+        .getResponse();
+    }
   },
 };
 
