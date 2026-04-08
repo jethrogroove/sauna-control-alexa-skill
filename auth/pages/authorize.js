@@ -169,10 +169,11 @@ export default function AuthorizePage() {
 
   // State management
   const [isLogin, setIsLogin] = useState(true);
-  const [step, setStep] = useState('auth'); // 'auth' or 'credentials'
+  const [step, setStep] = useState('auth'); // 'auth', 'credentials', or 'forgot'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [forgotEmail, setForgotEmail] = useState('');
 
   // Auth form
   const [email, setEmail] = useState('');
@@ -301,13 +302,39 @@ export default function AuthorizePage() {
   };
 
   const handleBackToAuth = () => {
-    sessionStorage.removeItem('userId');
+    userIdRef.current = null;
     setStep('auth');
     setError('');
     setSuccess('');
     setSaunaProvider('Huum');
     setSaunaEmail('');
     setSaunaPassword('');
+  };
+
+  /**
+   * Handle forgot password submission
+   */
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+
+      const data = await response.json();
+      setSuccess(data.message || 'Check your email for a reset link.');
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+      console.error('Forgot password error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -368,6 +395,69 @@ export default function AuthorizePage() {
                 {isLogin
                   ? "Don't have an account? Sign up"
                   : 'Already have an account? Sign in'}
+              </button>
+            </div>
+
+            {isLogin && (
+              <div className="toggle-link" style={{ marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('forgot');
+                    setForgotEmail(email);
+                    setError('');
+                    setSuccess('');
+                  }}
+                  disabled={loading}
+                >
+                  Forgot your password?
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {step === 'forgot' && (
+          <>
+            <div className="header">
+              <h1>Reset Password</h1>
+              <p>Enter your email to receive a reset link</p>
+            </div>
+
+            {error && <div className="error">{error}</div>}
+            {success && <div className="success">{success}</div>}
+
+            {!success && (
+              <form onSubmit={handleForgotPassword}>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                    placeholder="you@example.com"
+                  />
+                </div>
+
+                <button type="submit" className="button" disabled={loading}>
+                  {loading ? 'Sending...' : 'Send Reset Link'}
+                </button>
+              </form>
+            )}
+
+            <div className="toggle-link">
+              <button
+                type="button"
+                onClick={() => {
+                  setStep('auth');
+                  setError('');
+                  setSuccess('');
+                }}
+                disabled={loading}
+              >
+                Back to sign in
               </button>
             </div>
           </>
