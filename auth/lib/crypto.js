@@ -13,10 +13,12 @@ function getEncryptionKey() {
   if (!keyStr) {
     throw new Error('ENCRYPTION_KEY environment variable is not set');
   }
-  // Expect base64-encoded 32-byte key
-  const key = Buffer.from(keyStr, 'base64');
+  // Accept hex-encoded 32-byte key (64 hex chars)
+  const key = Buffer.from(keyStr, 'hex');
   if (key.length !== 32) {
-    throw new Error('ENCRYPTION_KEY must be 32 bytes');
+    throw new Error(
+      `ENCRYPTION_KEY must be 32 bytes (64 hex chars), got ${key.length} bytes`
+    );
   }
   return key;
 }
